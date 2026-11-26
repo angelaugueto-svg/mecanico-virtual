@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Motolab AA · Mecánico Virtual</title>
+  <meta name="description" content="Motolab AA — Mecánico Virtual. Pregúntale a Cheo sobre tu moto. Plan único $3/mes, preguntas ilimitadas.">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="gear" aria-hidden="true">⚙</span>
+      <div>
+        <h1>Motolab AA <span class="sep">/</span> Mecánico Virtual</h1>
+        <p class="slogan">Tu moto, en buenas manos</p>
+      </div>
+    </div>
+    <nav class="topnav">
+      <button id="nav-chat" class="navbtn" type="button">Chat con Cheo</button>
+      <button id="nav-admin" class="navbtn" type="button">Panel</button>
+      <button id="nav-logout" class="navbtn hidden" type="button">Salir</button>
+    </nav>
+  </header>
+
+  <main id="app">
+    <div id="error" class="error hidden" role="alert"></div>
+    <div id="stub-banner" class="stub-banner hidden">Modo de prueba: respuestas de ejemplo, no es Cheo de verdad</div>
+
+    <!-- ============ (1) REGISTRO / INICIO ============ -->
+    <section id="view-auth" class="view card">
+      <h2>Entra o regístrate</h2>
+      <p class="muted">Solo necesitas un usuario y tu número de teléfono. Sin clave, sin nombre real.</p>
+
+      <ol class="steps">
+        <li><strong>1.</strong> Regístrate con usuario y teléfono</li>
+        <li><strong>2.</strong> Paga $3/mes por pago móvil</li>
+        <li><strong>3.</strong> Confirma tu pago y pregunta lo que quieras</li>
+      </ol>
+
+      <div class="tabs" role="tablist">
+        <button id="tab-register" class="tab active" type="button">Registrarme</button>
+        <button id="tab-login" class="tab" type="button">Ya tengo cuenta</button>
+      </div>
+
+      <form id="form-register" class="form">
+        <label>Usuario
+          <input id="reg-username" name="username" type="text" autocomplete="username" placeholder="Ej.: motero123" required minlength="3">
+        </label>
+        <label>Número de teléfono
+          <input id="reg-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="0412-1234567" required>
+        </label>
+        <p class="hint">Tu usuario y tu teléfono deben ser únicos. Si el número ya está registrado, la app te avisará.</p>
+        <button class="btn primary" type="submit">Crear mi cuenta</button>
+      </form>
+
+      <form id="form-login" class="form hidden">
+        <label>Usuario
+          <input id="login-username" name="username" type="text" autocomplete="username" placeholder="Tu usuario" required>
+        </label>
+        <label>Número de teléfono
+          <input id="login-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="0412-1234567" required>
+        </label>
+        <button class="btn primary" type="submit">Entrar</button>
+      </form>
+
+      <p class="plan-note">Plan único: <strong>$3/mes</strong>, preguntas ilimitadas.</p>
+    </section>
+
+    <!-- ============ (2) PASO DEL PAGO (CONGELADO) ============ -->
+    <section id="view-payment" class="view card hidden">
+      <h2>Paso del pago</h2>
+      <div class="frozen" role="status">
+        <strong>Tu registro quedó detenido aquí.</strong>
+        <p>Haz el pago móvil y carga los datos abajo. Cuando se confirme tu pago, podrás preguntarle a Cheo en menos de un minuto.</p>
+      </div>
+      <div id="expired-note" class="expired-note hidden" role="status">
+        <strong>Tu plan venció.</strong>
+        <p>Para seguir preguntándole a Cheo, haz un nuevo pago de $3 y cárgalo abajo.</p>
+      </div>
+      <div id="pending-note" class="pending-note hidden" role="status">
+        <strong>Pago en revisión.</strong>
+        <p>Ya cargaste tu pago. Estamos verificando que llegó; en cuanto se confirme tendrás acceso a Cheo.</p>
+      </div>
+
+      <div class="paydata">
+        <h3>Datos del pago móvil</h3>
+        <p class="muted">Paga <strong>$3</strong> (en bolívares, a la tasa del día) a estos datos:</p>
+        <dl>
+          <div><dt>Banco</dt><dd id="pm-bank">—</dd></div>
+          <div><dt>Teléfono</dt><dd id="pm-phone">—</dd></div>
+          <div><dt>Cédula</dt><dd id="pm-cedula">—</dd></div>
+        </dl>
+        <p class="hint">Estos datos solo se muestran aquí, en el paso del pago.</p>
+      </div>
+
+      <form id="form-payment" class="form">
+        <h3>Carga tu pago</h3>
+        <label>Nombre de quien paga
+          <input id="pay-payerName" name="payerName" type="text" autocomplete="name" placeholder="Nombre y apellido" required>
+        </label>
+        <label>Cédula de quien paga
+          <input id="pay-cedula" name="cedula" type="text" inputmode="numeric" placeholder="V-12345678" required>
+        </label>
+        <label>Monto en Bs
+          <input id="pay-amountBs" name="amountBs" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ej.: 450,00" required>
+        </label>
+        <label>Referencia del pago móvil
+          <input id="pay-reference" name="reference" type="text" autocomplete="off" placeholder="Ej.: 123456789" required>
+        </label>
+        <label>Banco de origen
+          <input id="pay-bank" name="bank" type="text" autocomplete="off" placeholder="Ej.: 0102 - Banco de Venezuela" required>
+        </label>
+        <button class="btn primary" type="submit">Enviar pago para revisión</button>
+      </form>
+
+      <p class="muted center">¿Dudas con el pago? Escríbenos por WhatsApp:
+        <a class="wa-link" href="https://wa.me/584227201274" target="_blank" rel="noopener">0422-720-1274</a>
+      </p>
+    </section>
+
+    <!-- ============ (3) CHAT CON CHEO ============ -->
+    <section id="view-chat" class="view hidden">
+      <div class="statusbar card">
+        <div>
+          <strong id="chat-user">—</strong>
+          <span id="chat-state" class="badge">—</span>
+        </div>
+        <div class="plan-line">
+          <span id="chat-plan">—</span>
+          <span id="chat-days" class="badge">—</span>
+        </div>
+      </div>
+
+      <div id="chat-frozen" class="frozen hidden" role="status">
+        <strong>Tu registro quedó detenido aquí.</strong>
+        <p>Completa el pago para poder preguntarle a Cheo.</p>
+        <button id="btn-goto-payment" class="btn primary" type="button">Ir al paso del pago</button>
+      </div>
+      <div id="chat-expired" class="expired-note hidden" role="status">
+        <strong>Tu plan venció.</strong>
+        <p>Ya no puedes preguntarle a Cheo hasta renovar el plan de $3/mes.</p>
+        <button id="btn-goto-payment-2" class="btn primary" type="button">Renovar mi plan</button>
+      </div>
+
+      <div class="chat card">
+        <div id="chat-log" class="chat-log" aria-live="polite"></div>
+
+        <details class="moto-data">
+          <summary>Datos de tu moto (opcional, ayuda a Cheo a acertar)</summary>
+          <div class="moto-grid">
+            <label>Marca <input id="moto-brand" type="text" placeholder="Ej.: Empire"></label>
+            <label>Modelo <input id="moto-model" type="text" placeholder="Ej.: TX200"></label>
+            <label>Año <input id="moto-year" type="text" inputmode="numeric" placeholder="Ej.: 2022"></label>
+            <label>Cilindrada <input id="moto-cc" type="text" placeholder="Ej.: 200cc"></label>
+          </div>
+        </details>
+
+        <div id="quick-chips" class="chips"></div>
+
+        <form id="form-ask" class="ask-form">
+          <input id="ask-input" type="text" autocomplete="off" placeholder="Describe lo que le pasa a tu moto…" required>
+          <button class="btn primary" type="submit">Preguntar</button>
+        </form>
+        <p class="hint">Cheo responde solo con el catálogo real de Motolab AA. Si no sabe algo, te lo dice y te recomienda mecánico presencial o WhatsApp.</p>
+      </div>
+    </section>
+
+    <!-- ============ (4) PANEL DE ANGELA ============ -->
+    <section id="view-admin" class="view card hidden">
+      <h2>Panel de Angela</h2>
+
+      <div id="admin-auth">
+        <p class="muted">Entra con tu PIN para administrar clientes y pagos.</p>
+        <form id="form-admin-pin" class="form">
+          <label>PIN
+            <input id="admin-pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="Tu PIN" required>
+          </label>
+          <button class="btn primary" type="submit">Entrar al panel</button>
+        </form>
+        <form id="form-admin-setpin" class="form hidden">
+          <p><strong>Todavía no hay PIN.</strong> Crea uno ahora (guárdalo bien, no se puede recuperar desde aquí).</p>
+          <label>Crear PIN
+            <input id="admin-new-pin" type="password" inputmode="numeric" autocomplete="new-password" placeholder="PIN nuevo" required minlength="4">
+          </label>
+          <button class="btn primary" type="submit">Crear PIN</button>
+        </form>
+      </div>
+
+      <div id="admin-dash" class="hidden">
+        <div id="admin-pending-banner" class="pending-note hidden" role="status"></div>
+
+        <h3>Pagos por confirmar</h3>
+        <div id="admin-payments" class="list"></div>
+
+        <h3>Clientes</h3>
+        <div id="admin-clients" class="list"></div>
+
+        <h3>Registrar un cliente</h3>
+        <form id="form-admin-register" class="form">
+          <label>Usuario <input id="adm-reg-username" type="text" required></label>
+          <label>Teléfono <input id="adm-reg-phone" type="tel" inputmode="numeric" placeholder="0412-1234567" required></label>
+          <label>Banco <input id="adm-reg-bank" type="text" required></label>
+          <label>Referencia <input id="adm-reg-reference" type="text" required></label>
+          <button class="btn primary" type="submit">Registrar y activar (1 mes)</button>
+        </form>
+
+        <h3>Datos del pago móvil</h3>
+        <form id="form-admin-pagomovil" class="form">
+          <label>Banco <input id="adm-pm-bank" type="text" required></label>
+          <label>Teléfono <input id="adm-pm-phone" type="tel" inputmode="numeric" placeholder="0426-5136094" required></label>
+          <label>Cédula <input id="adm-pm-cedula" type="text" placeholder="V-14035968" required></label>
+          <p class="hint">El nombre del titular nunca se muestra a los clientes.</p>
+          <button class="btn primary" type="submit">Guardar datos del pago móvil</button>
+        </form>
+
+        <div class="admin-actions">
+          <button id="btn-export" class="btn" type="button">Descargar respaldo (CSV)</button>
+          <button id="btn-cleanup" class="btn" type="button">Limpiar registros vencidos (48 h)</button>
+          <button id="btn-admin-logout" class="btn" type="button">Salir del panel</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Motolab AA · Mecánico Virtual — Plan único $3/mes, preguntas ilimitadas.</p>
+    <p>WhatsApp: <a href="https://wa.me/584227201274" target="_blank" rel="noopener">0422-720-1274</a> · Instagram: @motolabaa</p>
+  </footer>
+
+  <script src="./app.js" type="module"></script>
+</body>
+</html>

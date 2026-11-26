@@ -1,0 +1,26 @@
+# Fly.io — Mecánico Virtual Motolab AA
+# Uso: instalar flyctl, `fly auth login`, `fly launch --no-deploy` (aceptar este
+# fly.toml), poner los secretos y desplegar. El nombre de la app debe ser único.
+# La base de datos recomendada es Neon Free (gratis, no vence); su URL va en el
+# secreto DATABASE_URL. El Postgres gestionado de Fly.io cuesta $4/mes (plan
+# Developer) y NO hace falta para esta app.
+app = "mecanico-virtual-motolab-aa"
+primary_region = "iad" # Ashburn, la región más barata
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+[env]
+  PORT = "3000"
+  ANTHROPIC_MODEL = "claude-haiku-4-5"

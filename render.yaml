@@ -1,0 +1,35 @@
+# Render — Mecánico Virtual Motolab AA (plan gratis para probar)
+# Desplegar: conectar este repo en render.com → New → Blueprint → elegir render.yaml
+# OJO: el Postgres gratis de Render VENCE a los 30 días (1 GB, luego se borra si no se
+# actualiza a pago). Para una base gratis que NO venza, usar Neon Free (ver DEPLOY.md)
+# y poner su DATABASE_URL a mano en el servicio web en vez de la base de aquí abajo.
+services:
+  - type: web
+    name: mecanico-virtual
+    env: node
+    plan: free
+    buildCommand: cd server && npm ci && npm run build && cd ../client && npm run build
+    startCommand: cd server && npm start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mecanico-db
+          property: connectionString
+      - key: ANTHROPIC_MODEL
+        value: claude-haiku-4-5
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+databases:
+  - name: mecanico-db
+    plan: free
+    databaseName: mecanico_virtual

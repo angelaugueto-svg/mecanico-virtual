@@ -1,0 +1,1 @@
+{"description":"Frontend standalone del Mecánico Virtual Motolab AA (una sola página, HTML/CSS/JS).","name":"mecanico-virtual-client","private":true,"scripts":{"build":"node build.mjs","dev":"node build.mjs && npx --yes serve -l 5173 dist"},"type":"module","version":"1.0.0"}
