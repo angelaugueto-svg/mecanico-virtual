@@ -90,8 +90,8 @@ function pickSpanishVoice() {
   const voices = window.speechSynthesis.getVoices().filter((v) => /^es([-_]|$)/i.test(v.lang));
   if (!voices.length) return null;
   const prefLangs = ["es-VE", "es-ES", "es-MX", "es-US"];
-  const maleHint = /male|masculin|hombre|jorge|diego|miguel|carlos|andres|alejandro|luis|pedro|juan|pablo|david|sergio|raul|enrique|fernando|roberto|javier|manuel|francisco|jose|antonio|daniel|ricardo|martin/i;
-  const femaleHint = /female|femenin|mujer|monica|paulina|marisol|luciana|sofia|valentina|camila|alejandra|fernanda|carmen|elena|rosa|maria|laura|ana|isabella|gabriela|daniela|teresa|lucia|patricia|veronica|natalia/i;
+  const maleHint = /male|masculin|hombre|jorge|diego|miguel|carlos|andres|alejandro|luis|pedro|juan|pablo|david|sergio|raul|enrique|fernando|roberto|javier|manuel|francisco|jose|antonio|daniel|ricardo|martin|abuelo|eddy|reed|rocko/i;
+  const femaleHint = /female|femenin|mujer|monica|paulina|marisol|luciana|sofia|valentina|camila|alejandra|fernanda|carmen|elena|rosa|maria|laura|ana|isabella|gabriela|daniela|teresa|lucia|patricia|veronica|natalia|abuela|flo|sandy|shelley/i;
   const isMale = (v) => maleHint.test(v.name) && !femaleHint.test(v.name);
   const isNotFemale = (v) => !femaleHint.test(v.name);
   // 1) Voz de hombre, prefiriendo los idiomas de la lista.
