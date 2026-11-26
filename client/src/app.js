@@ -82,18 +82,32 @@ async function api(path, { method = "GET", body, admin = false } = {}) {
 }
 
 /* ---------- voz gratis (speechSynthesis) ---------- */
+/* Cheo es HOMBRE: la voz tiene que ser de hombre. Se busca una voz masculina
+   en español en TODOS los idiomas antes de aceptar cualquier otra. */
 let spanishVoice = null;
 function pickSpanishVoice() {
   if (!("speechSynthesis" in window)) return null;
   const voices = window.speechSynthesis.getVoices().filter((v) => /^es([-_]|$)/i.test(v.lang));
   if (!voices.length) return null;
   const prefLangs = ["es-VE", "es-ES", "es-MX", "es-US"];
-  const maleHint = /male|masculin|hombre|jorge|diego|miguel|carlos|andres|alejandro|luis|pedro|juan|pablo|david|sergio|raul|enrique/i;
+  const maleHint = /male|masculin|hombre|jorge|diego|miguel|carlos|andres|alejandro|luis|pedro|juan|pablo|david|sergio|raul|enrique|fernando|roberto|javier|manuel|francisco|jose|antonio|daniel|ricardo|martin/i;
+  const femaleHint = /female|femenin|mujer|monica|paulina|marisol|luciana|sofia|valentina|camila|alejandra|fernanda|carmen|elena|rosa|maria|laura|ana|isabella|gabriela|daniela|teresa|lucia|patricia|veronica|natalia/i;
+  const isMale = (v) => maleHint.test(v.name) && !femaleHint.test(v.name);
+  const isNotFemale = (v) => !femaleHint.test(v.name);
+  // 1) Voz de hombre, prefiriendo los idiomas de la lista.
   for (const lang of prefLangs) {
     const inLang = voices.filter((v) => v.lang.toLowerCase().startsWith(lang.toLowerCase()));
-    if (inLang.length) return inLang.find((v) => maleHint.test(v.name)) || inLang[0];
+    const male = inLang.find(isMale);
+    if (male) return male;
   }
-  return voices.find((v) => maleHint.test(v.name)) || voices[0];
+  // 2) Cualquier voz de hombre en español.
+  const anyMale = voices.find(isMale);
+  if (anyMale) return anyMale;
+  // 3) Cualquier voz en español que no sea claramente de mujer.
+  const notFemale = voices.find(isNotFemale);
+  if (notFemale) return notFemale;
+  // 4) Último recurso: la primera voz en español.
+  return voices[0];
 }
 function refreshVoice() {
   spanishVoice = pickSpanishVoice();
@@ -109,6 +123,7 @@ function speak(text, btn) {
   u.voice = spanishVoice;
   u.lang = spanishVoice.lang;
   u.rate = 1;
+  u.pitch = 0.85; // Voz más grave, de hombre.
   if (btn) {
     u.onend = () => btn.classList.remove("playing");
     u.onerror = () => btn.classList.remove("playing");
