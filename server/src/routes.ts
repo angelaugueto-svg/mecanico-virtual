@@ -411,8 +411,19 @@ router.post('/admin/login', async (req: Request, res: Response) => {
   res.json({ adminToken: issueAdminToken() });
 });
 
-router.get('/admin/status', authAdmin, async (_req: Request, res: Response) => {
+router.get('/admin/status', async (req: Request, res: Response) => {
   const pinSet = (await getPinHash()) !== null;
+  // Sin sesión de admin solo se dice si ya hay PIN (para mostrar el
+  // formulario correcto: crear PIN o entrar con el PIN). Los datos del
+  // panel solo se devuelven con una sesión válida.
+  const header = req.headers.authorization ?? '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+  const exp = token ? adminTokens.get(token) : undefined;
+  const authed = !!exp && exp >= Date.now();
+  if (!authed) {
+    res.json({ pinSet, pendingPayments: 0, stub: STUB_MODE });
+    return;
+  }
   const pending = await db
     .select({ n: sql<number>`count(*)` })
     .from(payments)

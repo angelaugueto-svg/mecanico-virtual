@@ -626,12 +626,17 @@ function bindAdmin() {
       return;
     }
     try {
-      await api("/admin/set-pin", { method: "POST", admin: true, body: { pin } });
-      await checkAdminStatus();
+      const res = await api("/admin/set-pin", { method: "POST", admin: true, body: { pin } });
+      if (res && res.adminToken) localStorage.setItem(ADMIN_TOKEN_KEY, res.adminToken);
+      hide($("admin-auth")); show($("admin-dash"));
+      await loadDashboard();
       showError(null);
     } catch (err) {
       if (err.message === "invalid-pin") showError("El PIN debe ser solo números, de 4 a 12.");
-      else if (err.message === "pin-already-set") showError("Ya hay un PIN creado. Usa el PIN para entrar.");
+      else if (err.message === "pin-already-set") {
+        showError("Ya hay un PIN creado. Usa el PIN para entrar.");
+        await checkAdminStatus();
+      }
       else showError(`No se pudo crear el PIN: ${err.message}`);
     }
   });
