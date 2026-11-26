@@ -133,6 +133,12 @@ function setStubBanner(on) {
 function showView(name) {
   for (const v of ["view-auth", "view-payment", "view-chat", "view-admin"]) hide($(v));
   show($(name));
+  // La presentación (Cheo) solo se ve antes de entrar al chat o al panel.
+  const hero = $("hero");
+  if (hero) {
+    if (name === "view-auth" || name === "view-payment") show(hero);
+    else hide(hero);
+  }
   showError(null);
 }
 
