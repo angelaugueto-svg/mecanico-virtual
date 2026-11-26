@@ -136,12 +136,12 @@ function setStubBanner(on) {
 }
 
 function showView(name) {
-  for (const v of ["view-auth", "view-payment", "view-chat", "view-admin"]) hide($(v));
+  for (const v of ["view-auth", "view-payment", "view-moto", "view-chat", "view-admin"]) hide($(v));
   show($(name));
   // La presentación (Cheo) solo se ve antes de entrar al chat o al panel.
   const hero = $("hero");
   if (hero) {
-    if (name === "view-auth" || name === "view-payment") show(hero);
+    if (name === "view-auth" || name === "view-payment" || name === "view-moto") show(hero);
     else hide(hero);
   }
   showError(null);
@@ -172,7 +172,13 @@ function routeByState() {
   show(logoutBtn);
   const state = session.state;
   if (state === "active") {
+    // Paso a paso: sin los datos de la moto no se entra al chat.
+    if (!motoComplete()) {
+      showView("view-moto");
+      return;
+    }
     showView("view-chat");
+    renderMotoSummary();
     renderChatStatus();
     loadHistory();
   } else {
@@ -180,6 +186,21 @@ function routeByState() {
     showView("view-payment");
     renderPayment();
   }
+}
+
+/* Paso de la moto: los 4 datos tienen que estar para avanzar al chat. */
+function motoComplete() {
+  const m = motoFields();
+  return Boolean(m.brand && m.model && m.year && m.cc);
+}
+
+function renderMotoSummary() {
+  const m = motoFields();
+  const el = $("moto-summary-text");
+  if (!el) return;
+  el.textContent = m.brand && m.model
+    ? `Tu moto: ${m.brand} ${m.model}${m.year ? `, ${m.year}` : ""}${m.cc ? `, ${m.cc}` : ""}`
+    : "Tu moto: sin datos";
 }
 
 function renderPayment() {
@@ -362,11 +383,11 @@ function loadMoto() {
 async function ask(message, mode = "question", causeIdx = undefined) {
   if (!message.trim()) return;
   showError(null);
-  // Cheo no responde sin los datos de la moto (marca y modelo como mínimo).
+  // Cheo no responde sin los datos de la moto (los 4 datos).
   if (mode === "question") {
-    const m = motoFields();
-    if (!m.brand || !m.model) {
-      showError("Primero dime la marca y el modelo de tu moto arriba, para que Cheo te ayude bien.");
+    if (!motoComplete()) {
+      showError("Primero completa los datos de tu moto, para que Cheo te ayude bien.");
+      showView("view-moto");
       return;
     }
   }
@@ -771,6 +792,16 @@ async function init() {
     e.preventDefault();
     ask($("ask-input").value.trim(), "question");
   });
+  $("form-moto").addEventListener("submit", (e) => {
+    e.preventDefault();
+    saveMoto();
+    if (!motoComplete()) {
+      showError("Faltan datos de tu moto: llena marca, modelo, año y cilindrada.");
+      return;
+    }
+    routeByState();
+  });
+  $("btn-edit-moto").addEventListener("click", () => showView("view-moto"));
   $("nav-chat").addEventListener("click", async () => {
     if (localStorage.getItem(TOKEN_KEY)) {
       await loadSession();

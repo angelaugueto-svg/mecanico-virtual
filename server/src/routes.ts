@@ -314,9 +314,9 @@ router.post('/ask', authClient, async (req: AuthedRequest, res: Response) => {
     cc: req.body?.cc ? String(req.body.cc) : undefined,
   };
 
-  // Cheo no responde sin los datos de la moto (marca y modelo como mínimo).
+  // Cheo no responde sin los datos de la moto (los 4 datos).
   // Si faltan, no se consulta a Cheo ni se guarda la pregunta: se piden los datos.
-  if (mode === 'question' && (!vehicle.brand || !vehicle.model)) {
+  if (mode === 'question' && (!vehicle.brand || !vehicle.model || !vehicle.year || !vehicle.cc)) {
     res.json({
       greeting: false,
       answer: 'Para ayudarte bien necesito saber de tu moto: marca, modelo, año y cilindrada. Escríbelos arriba y vuelve a preguntarme.',

@@ -130,7 +130,23 @@
       </p>
     </section>
 
-    <!-- ============ (3) CHAT CON CHEO ============ -->
+    <!-- ============ (3) DATOS DE LA MOTO ============ -->
+    <section id="view-moto" class="view card hidden">
+      <h2>Datos de tu moto</h2>
+      <p class="muted">Paso 3: sin estos datos no puedes preguntarle a Cheo.</p>
+      <form id="form-moto" class="form">
+        <div class="moto-grid">
+          <label>Marca <input id="moto-brand" type="text" placeholder="Ej.: Empire" required></label>
+          <label>Modelo <input id="moto-model" type="text" placeholder="Ej.: TX200" required></label>
+          <label>Año <input id="moto-year" type="text" inputmode="numeric" placeholder="Ej.: 2022" required></label>
+          <label>Cilindrada <input id="moto-cc" type="text" placeholder="Ej.: 200cc" required></label>
+        </div>
+        <p class="moto-required">Si no pones los datos de tu moto, no puedes preguntarle a Cheo.</p>
+        <button class="btn primary" type="submit">Continuar</button>
+      </form>
+    </section>
+
+    <!-- ============ (4) CHAT CON CHEO ============ -->
     <section id="view-chat" class="view hidden">
       <div class="statusbar card">
         <div>
@@ -157,15 +173,9 @@
       <div class="chat card">
         <div id="chat-log" class="chat-log" aria-live="polite"></div>
 
-        <div class="moto-data">
-          <p class="moto-title"><strong>Datos de tu moto</strong> — necesarios para que Cheo te ayude</p>
-          <div class="moto-grid">
-            <label>Marca <input id="moto-brand" type="text" placeholder="Ej.: Empire"></label>
-            <label>Modelo <input id="moto-model" type="text" placeholder="Ej.: TX200"></label>
-            <label>Año <input id="moto-year" type="text" inputmode="numeric" placeholder="Ej.: 2022"></label>
-            <label>Cilindrada <input id="moto-cc" type="text" placeholder="Ej.: 200cc"></label>
-          </div>
-          <p class="moto-required">Si no pones los datos de tu moto, no puedes preguntarle a Cheo.</p>
+        <div class="moto-summary">
+          <span id="moto-summary-text">—</span>
+          <button id="btn-edit-moto" class="btn" type="button">Cambiar moto</button>
         </div>
 
         <div id="quick-chips" class="chips"></div>
