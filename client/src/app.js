@@ -251,6 +251,10 @@ async function refreshSessionSilently() {
   try {
     const prev = session?.state;
     await loadSession();
+    // Si está en el panel de administración, no sacarla de ahí: el ruteo
+    // de cliente no debe tapar el panel.
+    const adminEl = $("view-admin");
+    if (adminEl && !adminEl.classList.contains("hidden")) return;
     if (!session) { routeByState(); return; }
     if (prev !== session.state) {
       routeByState();
