@@ -123,7 +123,7 @@ function speak(text, btn) {
   u.voice = spanishVoice;
   u.lang = spanishVoice.lang;
   u.rate = 1;
-  u.pitch = 0.85; // Voz más grave, de hombre.
+  u.pitch = 1; // Tono natural de la voz elegida (sin forzarla grave, que sonaba raro).
   if (btn) {
     u.onend = () => btn.classList.remove("playing");
     u.onerror = () => btn.classList.remove("playing");
