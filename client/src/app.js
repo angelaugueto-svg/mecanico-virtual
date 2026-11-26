@@ -344,9 +344,32 @@ function motoFields() {
   return out;
 }
 
+/* Los datos de la moto se guardan en este teléfono: se escriben una sola vez. */
+const MOTO_KEY = "mv_moto";
+function saveMoto() {
+  try { localStorage.setItem(MOTO_KEY, JSON.stringify(motoFields())); } catch {}
+}
+function loadMoto() {
+  try {
+    const m = JSON.parse(localStorage.getItem(MOTO_KEY) || "{}");
+    const map = { brand: "moto-brand", model: "moto-model", year: "moto-year", cc: "moto-cc" };
+    for (const [key, id] of Object.entries(map)) {
+      if (m[key] && $(id)) $(id).value = m[key];
+    }
+  } catch {}
+}
+
 async function ask(message, mode = "question", causeIdx = undefined) {
   if (!message.trim()) return;
   showError(null);
+  // Cheo no responde sin los datos de la moto (marca y modelo como mínimo).
+  if (mode === "question") {
+    const m = motoFields();
+    if (!m.brand || !m.model) {
+      showError("Primero dime la marca y el modelo de tu moto arriba, para que Cheo te ayude bien.");
+      return;
+    }
+  }
   lastQuestion = message;
   if (mode === "question") {
     addMessage({ who: "user", text: message });
@@ -734,6 +757,11 @@ async function openAdmin() {
 /* ---------- arranque ---------- */
 async function init() {
   attachFormatters();
+  loadMoto();
+  for (const id of ["moto-brand", "moto-model", "moto-year", "moto-cc"]) {
+    const el = $(id);
+    if (el) el.addEventListener("input", saveMoto);
+  }
   bindAuth();
   bindPayment();
   bindAdmin();
