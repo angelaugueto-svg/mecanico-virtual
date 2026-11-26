@@ -136,7 +136,32 @@
       <p class="muted">Paso 3: sin estos datos no puedes preguntarle a Cheo.</p>
       <form id="form-moto" class="form">
         <div class="moto-grid">
-          <label>Marca <input id="moto-brand" type="text" placeholder="Ej.: Empire" required></label>
+          <label>Marca
+            <select id="moto-brand" required>
+              <option value="">Elige la marca…</option>
+              <option>Bera</option>
+              <option>Empire</option>
+              <option>Suzuki</option>
+              <option>Yamaha</option>
+              <option>Honda</option>
+              <option>Kawasaki</option>
+              <option>Keeway</option>
+              <option>Haojin</option>
+              <option>MD</option>
+              <option>Torito</option>
+              <option>UM</option>
+              <option>Skygo</option>
+              <option>Bajaj</option>
+              <option>TVS</option>
+              <option>Italika</option>
+              <option>Zontes</option>
+              <option>CFMoto</option>
+              <option>Loncin</option>
+              <option>Lifan</option>
+              <option value="Otra">Otra</option>
+            </select>
+          </label>
+          <label id="moto-brand-other-wrap" class="hidden">Otra marca <input id="moto-brand-other" type="text" placeholder="Escribe la marca"></label>
           <label>Modelo <input id="moto-model" type="text" placeholder="Ej.: TX200" required></label>
           <label>Año <input id="moto-year" type="text" inputmode="numeric" placeholder="Ej.: 2022" required></label>
           <label>Cilindrada <input id="moto-cc" type="text" placeholder="Ej.: 200cc" required></label>
