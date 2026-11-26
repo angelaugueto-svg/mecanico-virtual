@@ -137,31 +137,29 @@
       <form id="form-moto" class="form">
         <div class="moto-grid">
           <label>Marca
-            <select id="moto-brand" required>
-              <option value="">Elige la marca…</option>
-              <option>Bera</option>
-              <option>Empire</option>
-              <option>Suzuki</option>
-              <option>Yamaha</option>
-              <option>Honda</option>
-              <option>Kawasaki</option>
-              <option>Keeway</option>
-              <option>Haojin</option>
-              <option>MD</option>
-              <option>Torito</option>
-              <option>UM</option>
-              <option>Skygo</option>
-              <option>Bajaj</option>
-              <option>TVS</option>
-              <option>Italika</option>
-              <option>Zontes</option>
-              <option>CFMoto</option>
-              <option>Loncin</option>
-              <option>Lifan</option>
-              <option value="Otra">Otra</option>
-            </select>
+            <input id="moto-brand" type="text" list="moto-brand-list" placeholder="Escribe la marca…" autocomplete="off" required>
+            <datalist id="moto-brand-list">
+              <option value="Bera"></option>
+              <option value="Empire"></option>
+              <option value="Suzuki"></option>
+              <option value="Yamaha"></option>
+              <option value="Honda"></option>
+              <option value="Kawasaki"></option>
+              <option value="Keeway"></option>
+              <option value="Haojin"></option>
+              <option value="MD"></option>
+              <option value="Torito"></option>
+              <option value="UM"></option>
+              <option value="Skygo"></option>
+              <option value="Bajaj"></option>
+              <option value="TVS"></option>
+              <option value="Italika"></option>
+              <option value="Zontes"></option>
+              <option value="CFMoto"></option>
+              <option value="Loncin"></option>
+              <option value="Lifan"></option>
+            </datalist>
           </label>
-          <label id="moto-brand-other-wrap" class="hidden">Otra marca <input id="moto-brand-other" type="text" placeholder="Escribe la marca"></label>
           <label>Modelo <input id="moto-model" type="text" placeholder="Ej.: TX200" required></label>
           <label>Año <input id="moto-year" type="text" inputmode="numeric" placeholder="Ej.: 2022" required></label>
           <label>Cilindrada <input id="moto-cc" type="text" placeholder="Ej.: 200cc" required></label>

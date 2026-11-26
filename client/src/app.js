@@ -358,23 +358,11 @@ function renderQuickChips(questions, withFollowup) {
 function motoFields() {
   const v = (id) => $(id).value.trim();
   const out = {};
-  // Marca: lista desplegable; si es "Otra", se usa lo que escribió el cliente.
-  const brandSel = $("moto-brand").value;
-  const brand = brandSel === "Otra" ? v("moto-brand-other") : brandSel;
-  if (brand) out.brand = brand;
+  if (v("moto-brand")) out.brand = v("moto-brand");
   if (v("moto-model")) out.model = v("moto-model");
   if (v("moto-year")) out.year = v("moto-year");
   if (v("moto-cc")) out.cc = v("moto-cc");
   return out;
-}
-
-/* Muestra el campo para escribir la marca solo cuando eligen "Otra". */
-function toggleBrandOther() {
-  const wrap = $("moto-brand-other-wrap");
-  if (!wrap) return;
-  const isOther = $("moto-brand").value === "Otra";
-  wrap.classList.toggle("hidden", !isOther);
-  if (!isOther) $("moto-brand-other").value = "";
 }
 
 /* Los datos de la moto se guardan en este teléfono: se escriben una sola vez. */
@@ -385,19 +373,7 @@ function saveMoto() {
 function loadMoto() {
   try {
     const m = JSON.parse(localStorage.getItem(MOTO_KEY) || "{}");
-    // Marca: si está en la lista se elige; si no, se pone "Otra" y se escribe.
-    if (m.brand) {
-      const sel = $("moto-brand");
-      const inList = [...sel.options].some((o) => o.value === m.brand);
-      if (inList) {
-        sel.value = m.brand;
-      } else {
-        sel.value = "Otra";
-        $("moto-brand-other").value = m.brand;
-      }
-      toggleBrandOther();
-    }
-    const map = { model: "moto-model", year: "moto-year", cc: "moto-cc" };
+    const map = { brand: "moto-brand", model: "moto-model", year: "moto-year", cc: "moto-cc" };
     for (const [key, id] of Object.entries(map)) {
       if (m[key] && $(id)) $(id).value = m[key];
     }
@@ -803,12 +779,10 @@ async function openAdmin() {
 async function init() {
   attachFormatters();
   loadMoto();
-  for (const id of ["moto-brand", "moto-model", "moto-year", "moto-cc", "moto-brand-other"]) {
+  for (const id of ["moto-brand", "moto-model", "moto-year", "moto-cc"]) {
     const el = $(id);
     if (el) el.addEventListener("input", saveMoto);
   }
-  const brandSel = $("moto-brand");
-  if (brandSel) brandSel.addEventListener("change", () => { toggleBrandOther(); saveMoto(); });
   bindAuth();
   bindPayment();
   bindAdmin();
