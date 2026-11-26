@@ -119,10 +119,15 @@ function refreshVoice() {
 function speak(text, btn) {
   if (!spanishVoice || !("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
+  // Solo el resumen (1–2 frases): leer toda la respuesta suena robótico y largo.
+  let summary = String(text || "").split(/\n\s*\n/)[0].trim();
+  summary = summary.replace(/^Resumen:\s*/i, "");
+  const sentences = summary.match(/[^.!?]+[.!?]+["”)]?/g);
+  if (sentences && sentences.length > 2) summary = sentences.slice(0, 2).join(" ").trim();
+  const u = new SpeechSynthesisUtterance(summary);
   u.voice = spanishVoice;
   u.lang = spanishVoice.lang;
-  u.rate = 1;
+  u.rate = 0.95;
   u.pitch = 1; // Tono natural de la voz elegida (sin forzarla grave, que sonaba raro).
   if (btn) {
     u.onend = () => btn.classList.remove("playing");
