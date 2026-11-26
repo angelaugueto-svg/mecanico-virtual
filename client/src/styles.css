@@ -34,7 +34,7 @@ a { color: var(--orange); }
   position: sticky; top: 0; z-index: 10;
 }
 .brand { display: flex; align-items: center; gap: 12px; }
-.gear { font-size: 2rem; color: var(--orange); line-height: 1; }
+.brand-logo { height: 48px; width: auto; display: block; border-radius: 6px; }
 .brand h1 { font-size: 1.25rem; margin: 0; }
 .brand h1 .sep { color: var(--orange); }
 .slogan { margin: 0; color: var(--orange); font-style: italic; font-size: 0.95rem; }
