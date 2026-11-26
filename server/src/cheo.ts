@@ -25,7 +25,7 @@ Reglas firmes:
   Resumen: 1-2 frases.
   Causas: máximo 3, una por línea, la más probable primero.
   Pasos: máximo 5 pasos cortos (solo si el cliente pidió "¿Cómo lo hago?"; si no, omite esta sección).
-  Repuestos: solo los del catálogo que se te pasan abajo, con código y precio tal cual. Nunca inventes precios, existencias ni compatibilidad.
+  No incluyas una sección de repuestos en tu respuesta: los repuestos se muestran aparte en tarjetas con su código y precio, no los repitas aquí. Si hace falta nombrar un repuesto, di solo su nombre simple (por ejemplo "la bujía", "el filtro"), sin código ni precio. Nunca inventes precios, existencias ni compatibilidad.
 - Antes de afirmar compatibilidad, pregunta marca, modelo, año y cilindrada.
 - Si no te dieron marca, modelo, año y cilindrada, pídelos antes de dar causas o repuestos; no respondas la falla sin esos datos.
 - Da la respuesta y cállate: sin invitar a seguir preguntando, sin relleno, sin despedidas.
@@ -141,7 +141,7 @@ function pickStubParts(parts: CatalogPart[], keywords: string[], limit = 3): Cat
 function formatStubAnswer(
   causes: string[],
   steps: string[],
-  parts: CatalogPart[],
+  _parts: CatalogPart[],
   howTo: boolean,
 ): string {
   const lines: string[] = [];
@@ -152,12 +152,8 @@ function formatStubAnswer(
     lines.push('Pasos:');
     steps.forEach((s, i) => lines.push(`${i + 1}. ${s}`));
   }
-  if (parts.length > 0) {
-    lines.push('Repuestos:');
-    for (const p of parts) {
-      lines.push(`- ${p.code} — ${p.description} (${formatPrice(p.price)})`);
-    }
-  }
+  // Sin sección de repuestos en el texto: los repuestos se muestran aparte
+  // en tarjetas (con código y precio) y no se leen en voz alta.
   return lines.join('\n');
 }
 
@@ -179,10 +175,7 @@ export async function askCheoStub(
   if (mode === 'explain-easier') {
     answer =
       `Resumen: En palabras simples, ${causes[0] ? causes[0].toLowerCase() : 'hay algo que revisar'}.\n` +
-      `Causas:\n1. ${causes[0] ?? 'Revisar la moto'}\n` +
-      (picked.length > 0
-        ? `Repuestos:\n- ${picked[0].code} — ${picked[0].description} (${formatPrice(picked[0].price)})`
-        : '');
+      `Causas:\n1. ${causes[0] ?? 'Revisar la moto'}\n`;
   }
   if (mode === 'how-to') {
     answer = formatStubAnswer(causes, rule.steps, picked, true);
@@ -258,12 +251,12 @@ export async function askCheoReal(
     .map((b) => (b.type === 'text' ? b.text : ''))
     .join('\n')
     .trim();
-  // Repuestos mencionados: recuperarlos del catálogo por código en la respuesta.
-  const mentioned = candidates.filter((p) => p.code && text.includes(p.code));
+  // Repuestos para las tarjetas: los más relevantes del catálogo para la
+  // pregunta. La respuesta ya no trae códigos, así que no se recuperan del texto.
   return {
     answer: text,
     causes: [],
-    parts: mentioned.slice(0, 3),
+    parts: candidates.slice(0, 3),
     stub: false,
   };
 }
