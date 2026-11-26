@@ -51,6 +51,11 @@ function attachFormatters() {
     const el = $(id);
     if (el) el.addEventListener("input", () => formatCedulaInput(el));
   }
+  // PIN: solo números, máximo 12 (así no puede quedar una letra por error).
+  for (const id of ["admin-new-pin", "admin-pin"]) {
+    const el = $(id);
+    if (el) el.addEventListener("input", () => { el.value = el.value.replace(/\D/g, "").slice(0, 12); });
+  }
 }
 
 /* ---------- API ---------- */
@@ -615,12 +620,19 @@ function bindAdmin() {
   $("form-admin-setpin").addEventListener("submit", async (e) => {
     e.preventDefault();
     showError(null);
+    const pin = $("admin-new-pin").value.replace(/\D/g, "");
+    if (pin.length < 4) {
+      showError("El PIN debe tener al menos 4 números.");
+      return;
+    }
     try {
-      await api("/admin/set-pin", { method: "POST", admin: true, body: { pin: $("admin-new-pin").value } });
+      await api("/admin/set-pin", { method: "POST", admin: true, body: { pin } });
       await checkAdminStatus();
       showError(null);
     } catch (err) {
-      showError(`No se pudo crear el PIN: ${err.message}`);
+      if (err.message === "invalid-pin") showError("El PIN debe ser solo números, de 4 a 12.");
+      else if (err.message === "pin-already-set") showError("Ya hay un PIN creado. Usa el PIN para entrar.");
+      else showError(`No se pudo crear el PIN: ${err.message}`);
     }
   });
   $("form-admin-pin").addEventListener("submit", async (e) => {
