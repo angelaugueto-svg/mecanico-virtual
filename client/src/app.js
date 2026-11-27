@@ -81,60 +81,6 @@ async function api(path, { method = "GET", body, admin = false } = {}) {
   return data;
 }
 
-/* ---------- voz gratis (speechSynthesis) ---------- */
-/* Cheo es HOMBRE: la voz tiene que ser de hombre. Se busca una voz masculina
-   en español en TODOS los idiomas antes de aceptar cualquier otra. */
-let spanishVoice = null;
-function pickSpanishVoice() {
-  if (!("speechSynthesis" in window)) return null;
-  const voices = window.speechSynthesis.getVoices().filter((v) => /^es([-_]|$)/i.test(v.lang));
-  if (!voices.length) return null;
-  const prefLangs = ["es-VE", "es-ES", "es-MX", "es-US"];
-  const maleHint = /male|masculin|hombre|jorge|diego|miguel|carlos|andres|alejandro|luis|pedro|juan|pablo|david|sergio|raul|enrique|fernando|roberto|javier|manuel|francisco|jose|antonio|daniel|ricardo|martin|abuelo|eddy|reed|rocko/i;
-  const femaleHint = /female|femenin|mujer|monica|paulina|marisol|luciana|sofia|valentina|camila|alejandra|fernanda|carmen|elena|rosa|maria|laura|ana|isabella|gabriela|daniela|teresa|lucia|patricia|veronica|natalia|abuela|flo|sandy|shelley/i;
-  const isMale = (v) => maleHint.test(v.name) && !femaleHint.test(v.name);
-  const isNotFemale = (v) => !femaleHint.test(v.name);
-  // 1) Voz de hombre, prefiriendo los idiomas de la lista.
-  for (const lang of prefLangs) {
-    const inLang = voices.filter((v) => v.lang.toLowerCase().startsWith(lang.toLowerCase()));
-    const male = inLang.find(isMale);
-    if (male) return male;
-  }
-  // 2) Cualquier voz de hombre en español.
-  const anyMale = voices.find(isMale);
-  if (anyMale) return anyMale;
-  // 3) Cualquier voz en español que no sea claramente de mujer.
-  const notFemale = voices.find(isNotFemale);
-  if (notFemale) return notFemale;
-  // 4) Último recurso: la primera voz en español.
-  return voices[0];
-}
-function refreshVoice() {
-  spanishVoice = pickSpanishVoice();
-  // Si no hay voz en español, las bocinas quedan ocultas (solo texto).
-  document.querySelectorAll(".speak-btn").forEach((b) => {
-    b.style.display = spanishVoice ? "" : "none";
-  });
-}
-function speak(text, btn) {
-  if (!spanishVoice || !("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.voice = spanishVoice;
-  u.lang = spanishVoice.lang;
-  u.rate = 0.95;
-  u.pitch = 1; // Tono natural de la voz elegida (sin forzarla grave, que sonaba raro).
-  if (btn) {
-    u.onend = () => btn.classList.remove("playing");
-    u.onerror = () => btn.classList.remove("playing");
-    btn.classList.add("playing");
-  }
-  window.speechSynthesis.speak(u);
-}
-if ("speechSynthesis" in window) {
-  window.speechSynthesis.onvoiceschanged = refreshVoice;
-}
-
 /* ---------- estado ---------- */
 let session = null; // {client, state, plan, pagoMovil}
 let stubMode = false;
@@ -325,16 +271,6 @@ function addMessage({ who, text, greeting = false, causes = null, parts = null, 
     div.appendChild(wrap);
   }
 
-  // Bocina "Escuchar" en cada respuesta de Cheo, NUNCA en el saludo.
-  if (who === "cheo" && !greeting) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "speak-btn";
-    btn.textContent = "🔊 Escuchar";
-    if (!spanishVoice) btn.style.display = "none";
-    btn.addEventListener("click", () => speak(text, btn));
-    div.appendChild(btn);
-  }
   if (showGuided) {
     const g = document.createElement("div");
     g.className = "guided";
@@ -814,7 +750,6 @@ async function init() {
   bindAuth();
   bindPayment();
   bindAdmin();
-  refreshVoice();
 
   $("form-ask").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -841,7 +776,6 @@ async function init() {
   $("nav-admin").addEventListener("click", openAdmin);
   $("nav-logout").addEventListener("click", () => {
     localStorage.removeItem(TOKEN_KEY);
-    window.speechSynthesis?.cancel();
     session = null;
     $("chat-log").innerHTML = "";
     routeByState();

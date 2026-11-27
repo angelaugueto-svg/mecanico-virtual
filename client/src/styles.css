@@ -150,13 +150,6 @@ input:focus { outline: 2px solid var(--orange); border-color: var(--orange); }
 .msg.greeting { border-color: var(--orange); }
 .msg .who { display: block; font-size: 0.8rem; color: var(--orange); font-weight: 700; margin-bottom: 4px; }
 .msg .who.user-who { color: #ffe1cc; }
-.speak-btn {
-  margin-top: 8px; background: transparent; color: var(--orange);
-  border: 1px solid var(--orange); border-radius: 999px;
-  padding: 6px 12px; cursor: pointer; font-size: 0.9rem;
-}
-.speak-btn:hover { background: var(--orange); color: #fff; }
-.speak-btn.playing { background: var(--orange); color: #fff; }
 
 .causes { margin: 10px 0 0; padding-left: 18px; }
 .parts { display: grid; gap: 8px; margin-top: 10px; }
