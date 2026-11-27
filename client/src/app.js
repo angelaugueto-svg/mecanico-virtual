@@ -656,6 +656,15 @@ async function loadDashboard() {
       $("adm-pm-cedula").value = st.pagoMovil.cedula || "";
     }
   } catch (e) {
+    // Token viejo (el servidor se reinició y lo olvidó): volver al PIN para entrar de nuevo.
+    if (e.status === 401 || e.message === "unauthorized") {
+      localStorage.removeItem(ADMIN_TOKEN_KEY);
+      hide($("admin-dash")); show($("admin-auth"));
+      $("admin-pin").value = "";
+      await checkAdminStatus();
+      showError(null);
+      return;
+    }
     showError(`No se pudo cargar el panel: ${e.message}`);
   }
 }
