@@ -15,7 +15,7 @@ import {
   normalizeReference,
   type ClientState,
 } from './utils';
-import { askCheo, GREETING, STUB_MODE } from './cheo';
+import { askCheo, STUB_MODE } from './cheo';
 import { fetchCatalog } from './catalog';
 import { sendStoreMail, smtpConfigured, STORE_EMAIL } from './mailer';
 import { cleanupConsultationsOnly, runCleanup } from './cleanup';
@@ -348,7 +348,9 @@ router.post('/ask', authClient, async (req: AuthedRequest, res: Response) => {
     .map((h) => ({ question: h.question, answer: h.answer }));
 
   const result = await askCheo(message, mode, vehicle, history);
-  const answer = greeting ? `${GREETING}\n${result.answer}` : result.answer;
+  // El saludo ya se muestra aparte en el cliente (res.greeting); no se
+  // antepone al texto para no repetir "Hola, soy Cheo" dos veces.
+  const answer = result.answer;
 
   await db.insert(consultations).values({
     clientId: client.id,

@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { fetchCatalog, searchCatalog, formatPrice, type CatalogPart } from './catalog';
+import { type CatalogPart } from './catalog';
 
 export const STUB_MODE = !process.env.ANTHROPIC_API_KEY;
 export const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-haiku-4-5';
@@ -16,18 +16,19 @@ export interface CheoResult {
 
 export type AskMode = 'question' | 'not-that' | 'solved' | 'explain-easier' | 'how-to';
 
-const SYSTEM_PROMPT = `Eres Cheo, el mecánico de Motolab AA, un taller de repuestos de motos en Venezuela.
+const SYSTEM_PROMPT = `Eres Cheo, el mecánico de Motolab AA, una tienda de repuestos de motos en Venezuela.
 Reglas firmes:
 - Educado y respetuoso. Responde solo lo que sabes con seguridad, sin inventar.
-- Si no sabes, dilo y recomienda mecánico presencial, el taller o WhatsApp ${WHATSAPP}.
+- Si no sabes, dilo y recomienda escribir por WhatsApp ${WHATSAPP}.
 - Razona desde el síntoma. No digas "pana" ni "el mecánico de Motolab AA".
+- Solo responde las causas: no menciones repuestos, compras, precios ni el catálogo. Nunca digas que no tienes el catálogo ni que hay que comprar algo.
+- No saludes: el saludo ya se muestra aparte. No digas "Hola, soy Cheo".
 - Respuestas cortas y directas, en este formato exacto:
   Resumen: 1-2 frases.
   Causas: máximo 3, una por línea, la más probable primero.
   Pasos: máximo 5 pasos cortos (solo si el cliente pidió "¿Cómo lo hago?"; si no, omite esta sección).
-  No incluyas una sección de repuestos en tu respuesta: los repuestos se muestran aparte en tarjetas con su código y precio, no los repitas aquí. Si hace falta nombrar un repuesto, di solo su nombre simple (por ejemplo "la bujía", "el filtro"), sin código ni precio. Nunca inventes precios, existencias ni compatibilidad.
 - Antes de afirmar compatibilidad, pregunta marca, modelo, año y cilindrada.
-- Si no te dieron marca, modelo, año y cilindrada, pídelos antes de dar causas o repuestos; no respondas la falla sin esos datos.
+- Si no te dieron marca, modelo, año y cilindrada, pídelos antes de dar causas; no respondas la falla sin esos datos.
 - Da la respuesta y cállate: sin invitar a seguir preguntando, sin relleno, sin despedidas.
 - Si el cliente dice que ya lo solucionó, responde con una frase corta y seca, sin entusiasmo.
 - No menciones a Angela ni dónde está la tienda.`;
@@ -122,22 +123,6 @@ const STUB_RULES: StubRule[] = [
   },
 ];
 
-function pickStubParts(parts: CatalogPart[], keywords: string[], limit = 3): CatalogPart[] {
-  const found: CatalogPart[] = [];
-  for (const kw of keywords) {
-    for (const p of searchCatalog(parts, kw, 5)) {
-      if (!found.some((f) => f.code === p.code)) found.push(p);
-      if (found.length >= limit) return found;
-    }
-  }
-  // Si no hay coincidencias, usar los primeros disponibles del catálogo.
-  for (const p of parts) {
-    if (!found.some((f) => f.code === p.code)) found.push(p);
-    if (found.length >= limit) break;
-  }
-  return found;
-}
-
 function formatStubAnswer(
   causes: string[],
   steps: string[],
@@ -162,7 +147,6 @@ export async function askCheoStub(
   mode: AskMode,
   vehicle?: { brand?: string; model?: string; year?: string; cc?: string },
 ): Promise<CheoResult> {
-  const parts = await fetchCatalog();
   if (mode === 'solved') {
     return { answer: 'Entendido. Quedó anotado.', causes: [], parts: [], stub: true };
   }
@@ -170,18 +154,17 @@ export async function askCheoStub(
     STUB_RULES.find((r) => r.match.test(message)) ??
     STUB_RULES[0];
   const causes = mode === 'not-that' ? rule.causes.slice(1) : rule.causes;
-  const picked = pickStubParts(parts, rule.keywords);
-  let answer = formatStubAnswer(causes, rule.steps, picked, mode === 'how-to');
+  let answer = formatStubAnswer(causes, rule.steps, [], mode === 'how-to');
   if (mode === 'explain-easier') {
     answer =
       `Resumen: En palabras simples, ${causes[0] ? causes[0].toLowerCase() : 'hay algo que revisar'}.\n` +
       `Causas:\n1. ${causes[0] ?? 'Revisar la moto'}\n`;
   }
   if (mode === 'how-to') {
-    answer = formatStubAnswer(causes, rule.steps, picked, true);
+    answer = formatStubAnswer(causes, rule.steps, [], true);
   }
   void vehicle;
-  return { answer, causes, parts: picked, stub: true };
+  return { answer, causes, parts: [], stub: true };
 }
 
 let anthropic: Anthropic | null = null;
@@ -199,17 +182,6 @@ export async function askCheoReal(
   if (mode === 'solved') {
     return { answer: 'Entendido. Quedó anotado.', causes: [], parts: [], stub: false };
   }
-  const parts = await fetchCatalog();
-  const candidates = searchCatalog(parts, message, 12);
-  const catalogBlock =
-    candidates.length > 0
-      ? candidates
-          .map(
-            (p) =>
-              `- ${p.code} | ${p.description} | Compatible: ${p.compatible || 'no indica'} | ${formatPrice(p.price)} | ${p.status || ''} | ${p.category}`,
-          )
-          .join('\n')
-      : '(El catálogo no se pudo leer o no hay coincidencias. Responde sin repuestos y dilo.)';
 
   const vehicleLine = vehicle?.brand || vehicle?.model
     ? `Moto del cliente: marca ${vehicle.brand ?? '?'}, modelo ${vehicle.model ?? '?'}, año ${vehicle.year ?? '?'}, cilindrada ${vehicle.cc ?? '?'} cc.`
@@ -235,7 +207,6 @@ export async function askCheoReal(
       {
         role: 'user',
         content: [
-          `Catálogo disponible (solo usa estos repuestos):\n${catalogBlock}`,
           vehicleLine,
           historyBlock ? `Conversación reciente:\n${historyBlock}` : '',
           modeHint,
@@ -251,12 +222,11 @@ export async function askCheoReal(
     .map((b) => (b.type === 'text' ? b.text : ''))
     .join('\n')
     .trim();
-  // Repuestos para las tarjetas: los más relevantes del catálogo para la
-  // pregunta. La respuesta ya no trae códigos, así que no se recuperan del texto.
+  // Solo causas: no se devuelven repuestos ni tarjetas.
   return {
     answer: text,
     causes: [],
-    parts: candidates.slice(0, 3),
+    parts: [],
     stub: false,
   };
 }
